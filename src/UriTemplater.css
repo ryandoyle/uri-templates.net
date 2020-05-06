@@ -1,0 +1,11 @@
+.UriTemplater {
+    max-width: 800px;
+}
+
+.TemplateInput {
+    /*font-family: 'Roboto Mono', monospace !important;*/
+}
+
+.DraftEditor-root {
+    font-family: 'Roboto Mono', monospace;
+}
