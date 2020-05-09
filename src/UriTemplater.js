@@ -8,6 +8,7 @@ import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
+import Divider from "@material-ui/core/Divider";
 
 export class UriTemplater extends React.Component {
 
@@ -26,7 +27,7 @@ export class UriTemplater extends React.Component {
         return (
                 <Grid container direction={"column"} justify={"center"} alignItems={"stretch"} spacing={2}>
                     <Grid item>
-                        <Box display={"flex"} flexDirection={"row"} spacing={5}>
+                        <Box display={"flex"} flexDirection={"row"} >
                             <Box flexGrow={1} >
                                 <TextField
                                     onChange={this.handleTemplateChange}
@@ -44,6 +45,9 @@ export class UriTemplater extends React.Component {
                                 />
                             </Box>
                         </Box>
+                    </Grid>
+                    <Grid >
+                        <Box p={1}><Divider /></Box>
                     </Grid>
                     <Grid item>
                         <Box border={1} borderColor={"grey.500"} p={1}>
