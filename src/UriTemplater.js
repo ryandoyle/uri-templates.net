@@ -6,13 +6,19 @@ import 'draft-js/dist/Draft.css';
 import uriTemplates from 'uri-templates';
 import Grid from "@material-ui/core/Grid";
 import Box from "@material-ui/core/Box";
+import Checkbox from "@material-ui/core/Checkbox";
+import FormControlLabel from "@material-ui/core/FormControlLabel";
 
 export class UriTemplater extends React.Component {
 
 
     constructor(props) {
         super(props);
-        this.state = {uriTemplate: uriTemplates(''), editorState: EditorState.createEmpty()}
+        this.state = {
+            uriTemplate: '',
+            editorState: EditorState.createEmpty(),
+            isStrict: true
+        }
         this.onChange = editorState => this.setState({editorState})
     }
 
@@ -20,14 +26,24 @@ export class UriTemplater extends React.Component {
         return (
                 <Grid container direction={"column"} justify={"center"} alignItems={"stretch"} spacing={2}>
                     <Grid item>
-                        <TextField
-                            onChange={this.handleTemplateChange}
-                            className={"TemplateInput"}
-                            variant={"outlined"}
-                            size={"small"}
-                            fullWidth={true}
-                            placeholder={"/my/{uri}/?{template}"}
-                        />
+                        <Box display={"flex"} flexDirection={"row"} spacing={5}>
+                            <Box flexGrow={1} >
+                                <TextField
+                                    onChange={this.handleTemplateChange}
+                                    className={"TemplateInput"}
+                                    variant={"outlined"}
+                                    size={"small"}
+                                    fullWidth={true}
+                                    placeholder={"/my/{uri}/?{template}"}
+                                />
+                            </Box>
+                            <Box marginLeft={3}>
+                                <FormControlLabel
+                                    control={<Checkbox checked={this.state.isStrict} onChange={this.handleStrictChange}/>}
+                                    label={"Strict"}
+                                />
+                            </Box>
+                        </Box>
                     </Grid>
                     <Grid item>
                         <Box border={1} borderColor={"grey.500"} p={1}>
@@ -44,26 +60,33 @@ export class UriTemplater extends React.Component {
     }
 
     handleTemplateChange = (event) => {
-        this.setState({uriTemplate: uriTemplates(event.target.value)}, () => {
-            // Please forgive me, I have no idea how to react. We need to use the state in the matchesTemplateStrategy
-            // which comes from the state we set on the uriTemplate
-            this.setState({
-                editorState: EditorState.set(this.state.editorState, { decorator: new CompositeDecorator([
-                        {
-                            strategy: this.matchesTemplateStrategy,
-                            component: MatchesTemplateComponent
-                        }
-                    ])
-                } )})
-
-        });
+        this.setState({uriTemplate: event.target.value}, this.refreshEditorDecorator);
     };
 
+    handleStrictChange = (event) => {
+        this.setState({isStrict: event.target.checked}, this.refreshEditorDecorator)
+    }
+
+    refreshEditorDecorator() {
+        // Please forgive me, I have no idea how to react. We need to use the state in the matchesTemplateStrategy
+        // which comes from the state we set on the uriTemplate
+        this.setState({
+            editorState: EditorState.set(this.state.editorState, {
+                decorator: new CompositeDecorator([
+                    {
+                        strategy: this.matchesTemplateStrategy,
+                        component: MatchesTemplateComponent
+                    }
+                ])
+            })
+        });
+    }
+
     matchesTemplateStrategy = (contentBlock, callback, contentState) => {
-        let template = this.state.uriTemplate;
+        let template = uriTemplates(this.state.uriTemplate);
         let text = contentBlock.getText().trimEnd();
 
-        if (template.test(text, {strict: true})) {
+        if (template.test(text, {strict: this.state.isStrict})) {
             callback(0, text.length);
         }
     }
