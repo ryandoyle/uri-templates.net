@@ -1,11 +1,11 @@
 import React from "react";
 import TextField from "@material-ui/core/TextField";
 import './UriTemplater.css'
-import Paper from "@material-ui/core/Paper";
-import Container from "@material-ui/core/Container";
-import {Editor, EditorState, CompositeDecorator} from 'draft-js';
+import {CompositeDecorator, Editor, EditorState} from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import uriTemplates from 'uri-templates';
+import Grid from "@material-ui/core/Grid";
+import Box from "@material-ui/core/Box";
 
 export class UriTemplater extends React.Component {
 
@@ -18,13 +18,28 @@ export class UriTemplater extends React.Component {
 
     render() {
         return (
-            <Container maxWidth={"md"}>
-                <Paper >
-                    <TextField onChange={this.handleTemplateChange} className={"TemplateInput"} variant={"outlined"} size={"small"} fullWidth={true}  placeholder={"/my/{path}/?{param1,param2}"}/>
-                    <Editor placeholder={"Enter test URLs per line..."} editorState={this.state.editorState} onChange={this.onChange} />
-                </Paper>
-            </Container>
-
+                <Grid container direction={"column"} justify={"center"} alignItems={"stretch"} spacing={2}>
+                    <Grid item>
+                        <TextField
+                            onChange={this.handleTemplateChange}
+                            className={"TemplateInput"}
+                            variant={"outlined"}
+                            size={"small"}
+                            fullWidth={true}
+                            placeholder={"/my/{uri}/?{template}"}
+                        />
+                    </Grid>
+                    <Grid item>
+                        <Box border={1} borderColor={"grey.500"} p={1}>
+                        <Editor
+                            className={"UriTemplater-editor"}
+                            placeholder={"Enter test URLs per line..."}
+                            editorState={this.state.editorState}
+                            onChange={this.onChange}
+                        />
+                        </Box>
+                    </Grid>
+                </Grid>
         )
     }
 
@@ -42,7 +57,7 @@ export class UriTemplater extends React.Component {
                 } )})
 
         });
-    }
+    };
 
     matchesTemplateStrategy = (contentBlock, callback, contentState) => {
         let template = this.state.uriTemplate;
