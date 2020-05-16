@@ -14,6 +14,7 @@ type UriTemplaterState = {
     uriTemplate: string
     editorState: EditorState
     isStrict: boolean
+    contentBlockUnderCursor?: ContentBlock;
 }
 
 export class UriTemplater extends React.Component<{}, UriTemplaterState> {
@@ -23,11 +24,21 @@ export class UriTemplater extends React.Component<{}, UriTemplaterState> {
         this.state = {
             uriTemplate: '',
             editorState: EditorState.createEmpty(),
-            isStrict: true
+            isStrict: true,
         };
     }
 
-    onChange = (editorState: EditorState) => this.setState({editorState});
+    onChange = (editorState: EditorState) => {
+
+        var selectionState = editorState.getSelection();
+        var anchorKey = selectionState.getAnchorKey();
+        var currentContent = editorState.getCurrentContent();
+        var currentContentBlock = currentContent.getBlockForKey(anchorKey);
+        var selectedText = currentContentBlock.getText() //.slice(start, end);
+        console.log(selectedText);
+
+        return this.setState({editorState, contentBlockUnderCursor: currentContentBlock}, this.refreshEditorDecorator);
+    };
 
     render = () => {
         return (
@@ -85,6 +96,10 @@ export class UriTemplater extends React.Component<{}, UriTemplaterState> {
                     {
                         strategy: this.matchesTemplateStrategy,
                         component: MatchesTemplateComponent
+                    },
+                    {
+                        strategy: this.isSelectedStrategy,
+                        component: IsSelectedComponent
                     }
                 ])
             })
@@ -99,7 +114,14 @@ export class UriTemplater extends React.Component<{}, UriTemplaterState> {
         if (template.test(text, {strict: this.state.isStrict})) {
             callback(0, text.length);
         }
-    }
+    };
+
+    isSelectedStrategy = (contentBlock: ContentBlock, callback: (start: number, end: number) => void, contentState: ContentState) => {
+        if (this.state.contentBlockUnderCursor === contentBlock) {
+            callback(0, contentBlock.getLength());
+
+        }
+    };
 
 
 }
@@ -108,6 +130,16 @@ class MatchesTemplateComponent extends React.Component<{offsetKey: number}> {
     render() {
         return (
             <span style={{backgroundColor: "#e1ffdc"}} data-offset-key={this.props.offsetKey}>
+                {this.props.children}
+            </span>
+        );
+    }
+}
+
+class IsSelectedComponent extends React.Component<{offsetKey: number}> {
+    render() {
+        return (
+            <span style={{border: "1px solid red"}} data-offset-key={this.props.offsetKey}>
                 {this.props.children}
             </span>
         );
