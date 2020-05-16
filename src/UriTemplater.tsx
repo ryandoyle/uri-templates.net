@@ -1,7 +1,7 @@
 import React, {ChangeEvent} from "react";
 import TextField from "@material-ui/core/TextField";
 import './UriTemplater.css'
-import {CompositeDecorator, ContentBlock, ContentState, Editor, EditorState} from 'draft-js';
+import {ContentBlock, ContentState, Editor, EditorState} from 'draft-js';
 import 'draft-js/dist/Draft.css';
 import uriTemplates from 'uri-templates';
 import Grid from "@material-ui/core/Grid";
@@ -9,6 +9,7 @@ import Box from "@material-ui/core/Box";
 import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Divider from "@material-ui/core/Divider";
+import {SimpleDecorator} from "./SimpleDecorator";
 
 type UriTemplaterState = {
     uriTemplate: string
@@ -29,13 +30,11 @@ export class UriTemplater extends React.Component<{}, UriTemplaterState> {
     }
 
     onChange = (editorState: EditorState) => {
-
-        var selectionState = editorState.getSelection();
-        var anchorKey = selectionState.getAnchorKey();
-        var currentContent = editorState.getCurrentContent();
-        var currentContentBlock = currentContent.getBlockForKey(anchorKey);
-        var selectedText = currentContentBlock.getText() //.slice(start, end);
-        console.log(selectedText);
+        const selectionState = editorState.getSelection();
+        const anchorKey = selectionState.getAnchorKey();
+        const currentContent = editorState.getCurrentContent();
+        const currentContentBlock = currentContent.getBlockForKey(anchorKey);
+        const selectedText = currentContentBlock.getText(); //.slice(start, end);
 
         return this.setState({editorState, contentBlockUnderCursor: currentContentBlock}, this.refreshEditorDecorator);
     };
@@ -92,54 +91,39 @@ export class UriTemplater extends React.Component<{}, UriTemplaterState> {
         // which comes from the state we set on the uriTemplate
         this.setState({
             editorState: EditorState.set(this.state.editorState, {
-                decorator: new CompositeDecorator([
-                    {
-                        strategy: this.matchesTemplateStrategy,
-                        component: MatchesTemplateComponent
-                    },
-                    {
-                        strategy: this.isSelectedStrategy,
-                        component: IsSelectedComponent
-                    }
-                ])
+                decorator: new SimpleDecorator(this.matchingLineStrategy, MatchingLineComponent)
             })
         });
     }
 
-    matchesTemplateStrategy = (contentBlock: ContentBlock, callback: (start: number, end: number) => void, contentState: ContentState) => {
+    matchingLineStrategy = (contentBlock: ContentBlock, callback: (start: number, end: number, props: any) => void, contentState: ContentState) => {
         let template = uriTemplates(this.state.uriTemplate);
         let text = contentBlock.getText().trimEnd();
+        const caretOnCurrentLine = this.state.contentBlockUnderCursor === contentBlock;
 
         // @ts-ignore: template.test is not on current type definitions
         if (template.test(text, {strict: this.state.isStrict})) {
-            callback(0, text.length);
+            return callback(0, text.length, {lineMatches: true, caretOnCurrentLine});
+        }
+        if (caretOnCurrentLine) {
+            return callback(0, text.length, {lineMatches: false, caretOnCurrentLine});
         }
     };
 
-    isSelectedStrategy = (contentBlock: ContentBlock, callback: (start: number, end: number) => void, contentState: ContentState) => {
-        if (this.state.contentBlockUnderCursor === contentBlock) {
-            callback(0, contentBlock.getLength());
+}
 
+class MatchingLineComponent extends React.Component<{offsetKey: number, lineMatches: boolean, caretOnCurrentLine: boolean}> {
+
+    styles = () => {
+        return {
+            backgroundColor: (this.props.lineMatches ? "#e1ffdc" : ""),
+            ...(this.props.caretOnCurrentLine ? {border: (this.props.lineMatches ? "1px solid #88E992" : "1px solid #ddd")} : {})
         }
     };
 
-
-}
-
-class MatchesTemplateComponent extends React.Component<{offsetKey: number}> {
     render() {
         return (
-            <span style={{backgroundColor: "#e1ffdc"}} data-offset-key={this.props.offsetKey}>
-                {this.props.children}
-            </span>
-        );
-    }
-}
-
-class IsSelectedComponent extends React.Component<{offsetKey: number}> {
-    render() {
-        return (
-            <span style={{border: "1px solid red"}} data-offset-key={this.props.offsetKey}>
+            <span style={this.styles()} data-offset-key={this.props.offsetKey}>
                 {this.props.children}
             </span>
         );

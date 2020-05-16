@@ -9,3 +9,7 @@
 .DraftEditor-root {
     font-family: 'Roboto Mono', monospace;
 }
+
+.public-DraftStyleDefault-block {
+    margin: 0.3em;
+}
