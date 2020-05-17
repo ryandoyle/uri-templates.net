@@ -33,6 +33,7 @@ function App() {
                 target="_blank"
                 color={"textSecondary"}
                 variant={"button"}
+                tabIndex={-1}
             >
                 About
             </Link>
