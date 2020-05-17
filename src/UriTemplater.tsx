@@ -10,6 +10,13 @@ import Checkbox from "@material-ui/core/Checkbox";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Divider from "@material-ui/core/Divider";
 import {SimpleDecorator} from "./SimpleDecorator";
+import TableRow from "@material-ui/core/TableRow";
+import TableCell from "@material-ui/core/TableCell";
+import TableBody from "@material-ui/core/TableBody";
+import Table from "@material-ui/core/Table";
+import TableHead from "@material-ui/core/TableHead";
+import Paper from "@material-ui/core/Paper";
+import TableContainer from "@material-ui/core/TableContainer";
 
 type UriTemplaterState = {
     uriTemplate: string
@@ -74,6 +81,15 @@ export class UriTemplater extends React.Component<{}, UriTemplaterState> {
                         />
                     </Box>
                 </Grid>
+                <Grid item>
+                    <Box p={1}>
+                        <TemplateMatchDetails
+                            template={this.state.uriTemplate}
+                            strict={this.state.isStrict}
+                            path={this.state.contentBlockUnderCursor && this.state.contentBlockUnderCursor.getText().trimEnd()}
+                        />
+                    </Box>
+                </Grid>
             </Grid>
         )
     };
@@ -110,6 +126,76 @@ export class UriTemplater extends React.Component<{}, UriTemplaterState> {
         }
     };
 
+}
+
+class TemplateMatchDetails extends React.Component<{template: string, strict: boolean, path?: string}> {
+
+    templateValues = (): Record<string,any> => {
+        let template = uriTemplates(this.props.template);
+        if (this.props.path) {
+            // @ts-ignore
+            return template.fromUri(this.props.path, {strict: this.props.strict})
+        }
+        return {}
+    };
+
+    matches = () => {
+        let template = uriTemplates(this.props.template);
+        if (this.props.path) {
+            // @ts-ignore
+            return template.test(this.props.path, {strict: this.props.strict})
+        }
+        return false
+    };
+
+    prettyPrintValue = (v: any) => {
+        if (v instanceof String) {
+            return v
+        }
+        if (v instanceof Array) {
+            return `[${v.map((i) => `"${i}"`).join(',')}]`
+        }
+        return JSON.stringify(v, null, 2);
+    };
+
+    render() {
+        if (this.matches()) {
+            return (
+                <Grid container direction="column" justify="center" alignItems="stretch">
+                    <Grid container item>
+                        <p>Matches for <Box component="span" fontFamily="'Roboto Mono', monospace" fontWeight="fontWeightBold">{this.props.path}</Box></p>
+                    </Grid>
+                    <Grid container item>
+                        <TableContainer component={Paper}>
+                            <Table size="small" aria-label="template resulsts">
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Name</TableCell>
+                                        <TableCell align={"left"}>Value</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {Object.entries(this.templateValues()).map( ([k,v]) => (
+                                        <TableRow key={k} hover>
+                                            <TableCell component="th" scope="row">
+                                                {k}
+                                            </TableCell>
+                                            <TableCell>
+                                                <pre style={{fontFamily: "'Roboto Mono', monospace", margin: '0px'}}>
+                                                    {this.prettyPrintValue(v)}
+                                                </pre>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    </Grid>
+                </Grid>
+            );
+        }
+        return (<div />)
+    }
 }
 
 class MatchingLineComponent extends React.Component<{offsetKey: number, lineMatches: boolean, caretOnCurrentLine: boolean}> {
