@@ -17,6 +17,8 @@ import Table from "@material-ui/core/Table";
 import TableHead from "@material-ui/core/TableHead";
 import Paper from "@material-ui/core/Paper";
 import TableContainer from "@material-ui/core/TableContainer";
+import Link from "@material-ui/core/Link";
+import Tooltip from "@material-ui/core/Tooltip";
 
 type UriTemplaterState = {
     uriTemplate: string
@@ -164,7 +166,13 @@ class TemplateMatchDetails extends React.Component<{template: string, strict: bo
             return (
                 <Grid container direction="column" justify="center" alignItems="stretch">
                     <Grid container item>
-                        <p>Variables for <Box component="span" fontFamily="'Roboto Mono', monospace" fontWeight="fontWeightBold">{this.props.path}</Box></p>
+                        <p>Variables for
+                            <Tooltip title="This site uses the uri-templates NPM library. This may not match your URI templating library. See ABOUT for more." >
+                                <Link variant={"button"}>*</Link>
+                            </Tooltip>
+                            &nbsp;&nbsp;
+                            <Box component="span" fontFamily="'Roboto Mono', monospace" fontWeight="fontWeightBold">{this.props.path}</Box>
+                        </p>
                     </Grid>
                     <Grid container item>
                         <TableContainer component={Paper}>
