@@ -59,6 +59,7 @@ export class UriTemplater extends React.Component<{}, UriTemplaterState> {
                                 size={"small"}
                                 fullWidth={true}
                                 placeholder={"/my/{uri}/?{template}"}
+                                autoFocus={true}
                             />
                         </Box>
                         <Box marginLeft={3}>
@@ -163,7 +164,7 @@ class TemplateMatchDetails extends React.Component<{template: string, strict: bo
             return (
                 <Grid container direction="column" justify="center" alignItems="stretch">
                     <Grid container item>
-                        <p>Matches for <Box component="span" fontFamily="'Roboto Mono', monospace" fontWeight="fontWeightBold">{this.props.path}</Box></p>
+                        <p>Variables for <Box component="span" fontFamily="'Roboto Mono', monospace" fontWeight="fontWeightBold">{this.props.path}</Box></p>
                     </Grid>
                     <Grid container item>
                         <TableContainer component={Paper}>
